@@ -409,7 +409,7 @@ CFlvParser::Tag *CFlvParser::create_tag(unsigned char *pBuf, int nLeftLen) {
     }
 
     Tag *pTag;
-    switch (header.m_type) { //根据tag type匹配对应类型
+    switch (header.m_type) { //根据tag type匹配对应类型，格式参考blog：https://blog.csdn.net/weixin_41910694/article/details/109564752
         case 0x09:
             pTag = new CVideoTag(&header, pBuf, nLeftLen, this); //解析视频tag
             break;
