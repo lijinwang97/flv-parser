@@ -1,1 +1,1 @@
-g++ main.cpp Videojj.cpp FlvParser.cpp vadbg.cpp -o FlvParser -g
+g++ main.cpp Videojj.cpp FlvParser.cpp -o FlvParser -g

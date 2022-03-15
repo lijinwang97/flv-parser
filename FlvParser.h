@@ -9,95 +9,102 @@ using namespace std;
 
 typedef unsigned long long uint64_t;
 
-class CFlvParser
-{
+class CFlvParser {
 public:
-	CFlvParser();
-	virtual ~CFlvParser();
+    CFlvParser();
 
-	int Parse(unsigned char *pBuf, int nBufSize, int &nUsedLen);
-	int PrintInfo();
-	int DumpH264(const std::string &path);
-	int DumpAAC(const std::string &path);
-	int DumpFlv(const std::string &path);
+    virtual ~CFlvParser();
+
+    int parse(unsigned char *pBuf, int nBufSize, int &nUsedLen);
+
+    int print_info();
+
+    int dump_H264(const std::string &path);
+
+    int dump_AAC(const std::string &path);
+
+    int dump_Flv(const std::string &path);
 
 private:
-	typedef struct FlvHeader_s
-	{
-		int nVersion;
-		int bHaveVideo, bHaveAudio;
-		int nHeadSize;
+    typedef struct FlvHeader_s {
+        int m_version;
+        int m_haveVideo, m_haveAudio;
+        int m_headSize;
 
-		unsigned char *pFlvHeader;
-	} FlvHeader;
-	struct TagHeader
-	{
-		int nType;
-		int nDataSize;
-		int nTimeStamp;
-		int nTSEx;
-		int nStreamID;
+        unsigned char *m_flvHeader;
+    } FlvHeader;
 
-		unsigned int nTotalTS;
+    struct TagHeader {
+        int m_type;
+        int m_dataSize;
+        int m_timeStamp;
+        int m_TSEx;
+        int m_StreamID;
 
-		TagHeader() : nType(0), nDataSize(0), nTimeStamp(0), nTSEx(0), nStreamID(0), nTotalTS(0) {}
-		~TagHeader() {}
-	};
+        unsigned int m_TotalTS;
 
-	class Tag
-	{
-	public:
-	    Tag() : _pTagHeader(NULL), _pTagData(NULL), _pMedia(NULL), _nMediaLen(0) {}
-		void Init(TagHeader *pHeader, unsigned char *pBuf, int nLeftLen);
+        TagHeader() : m_type(0), m_dataSize(0), m_timeStamp(0), m_TSEx(0), m_StreamID(0), m_TotalTS(0) {}
 
-		TagHeader _header;
-		unsigned char *_pTagHeader;
-		unsigned char *_pTagData;
-		unsigned char *_pMedia;
-		int _nMediaLen;
-	};
+        ~TagHeader() {}
+    };
 
-	class CVideoTag : public Tag
-	{
-	public:
-		CVideoTag(TagHeader *pHeader, unsigned char *pBuf, int nLeftLen, CFlvParser *pParser);
+    class Tag {
+    public:
+        Tag() : m_tagHeader(NULL), m_tagData(NULL), m_media(NULL), m_mediaLen(0) {}
 
-		int _nFrameType;
-		int _nCodecID;
-		int ParseH264Tag(CFlvParser *pParser);
-		int ParseH264Configuration(CFlvParser *pParser, unsigned char *pTagData);
-		int ParseNalu(CFlvParser *pParser, unsigned char *pTagData);
-	};
+        void init(TagHeader *pHeader, unsigned char *pBuf, int nLeftLen);
 
-	class CAudioTag : public Tag
-	{
-	public:
-		CAudioTag(TagHeader *pHeader, unsigned char *pBuf, int nLeftLen, CFlvParser *pParser);
+        TagHeader m_header;
+        unsigned char *m_tagHeader; //记录tag header原始数据
+        unsigned char *m_tagData; //记录tag data原始数据
+        unsigned char *m_media;
+        int m_mediaLen;
+    };
 
-		int _nSoundFormat;
-		int _nSoundRate;
-		int _nSoundSize;
-		int _nSoundType;
+    class CVideoTag : public Tag {
+    public:
+        CVideoTag(TagHeader *pHeader, unsigned char *pBuf, int nLeftLen, CFlvParser *pParser);
 
-		// aac
-		static int _aacProfile;
-		static int _sampleRateIndex;
-		static int _channelConfig;
+        int m_frameType;
+        int m_codecID;
 
-		int ParseAACTag(CFlvParser *pParser);
-		int ParseAudioSpecificConfig(CFlvParser *pParser, unsigned char *pTagData);
-		int ParseRawAAC(CFlvParser *pParser, unsigned char *pTagData);
-	};
+        int parse_H264_tag(CFlvParser *pParser);
+
+        int parse_H264_configuration(CFlvParser *pParser, unsigned char *pTagData);
+
+        int parse_nalu(CFlvParser *pParser, unsigned char *pTagData);
+    };
+
+    class CAudioTag : public Tag {
+    public:
+        CAudioTag(TagHeader *pHeader, unsigned char *pBuf, int nLeftLen, CFlvParser *pParser);
+
+        int m_soundFormat;
+        int m_soundRate;
+        int m_soundSize;
+        int m_soundType;
+
+        // aac
+        static int m_aacProfile;
+        static int m_sampleRateIndex;
+        static int m_channelConfig;
+
+        int parse_AAC_tag(CFlvParser *pParser);
+
+        int parse_audio_specificConfig(CFlvParser *pParser, unsigned char *pTagData);
+
+        int parse_rawAAC(CFlvParser *pParser, unsigned char *pTagData);
+    };
 
     class CMetaDataTag : public Tag {
     public:
         CMetaDataTag(TagHeader *pHeader, uint8_t *pBuf, int nLeftLen, CFlvParser *pParser);
 
-        double hexStr2double(const unsigned char *hex, const unsigned int length);
+        double hex_str2double(const unsigned char *hex, const unsigned int length);
 
-        int parseMeta(CFlvParser *pParser);
+        int parse_meta(CFlvParser *pParser);
 
-        void printMeta();
+        void print_meta();
 
         uint8_t m_amf1_type;
         uint32_t m_amf1_size;
@@ -126,32 +133,36 @@ private:
         double m_filesize;
     };
 
-	struct FlvStat
-	{
-		int nMetaNum, nVideoNum, nAudioNum;
-		int nMaxTimeStamp;
-		int nLengthSize;
+    struct FlvStat {
+        int m_metaNum, m_videoNum, m_audioNum;
+        int m_maxTimeStamp;
+        int m_lengthSize;
 
-		FlvStat() : nMetaNum(0), nVideoNum(0), nAudioNum(0), nMaxTimeStamp(0), nLengthSize(0){}
-		~FlvStat() {}
-	};
+        FlvStat() : m_metaNum(0), m_videoNum(0), m_audioNum(0), m_maxTimeStamp(0), m_lengthSize(0) {}
+
+        ~FlvStat() {}
+    };
 
 
+    static unsigned int show_u32(unsigned char *pBuf) {
+        return (pBuf[0] << 24) | (pBuf[1] << 16) | (pBuf[2] << 8) | pBuf[3];
+    }
 
-	static unsigned int ShowU32(unsigned char *pBuf) { return (pBuf[0] << 24) | (pBuf[1] << 16) | (pBuf[2] << 8) | pBuf[3]; }
-	static unsigned int ShowU24(unsigned char *pBuf) { return (pBuf[0] << 16) | (pBuf[1] << 8) | (pBuf[2]); }
-	static unsigned int ShowU16(unsigned char *pBuf) { return (pBuf[0] << 8) | (pBuf[1]); }
-	static unsigned int ShowU8(unsigned char *pBuf) { return (pBuf[0]); }
-	static void WriteU64(uint64_t & x, int length, int value)
-	{
-		uint64_t mask = 0xFFFFFFFFFFFFFFFF >> (64 - length);
-		x = (x << length) | ((uint64_t)value & mask);
-	}
-    static unsigned int WriteU32(unsigned int n)
-    {
+    static unsigned int show_u24(unsigned char *pBuf) { return (pBuf[0] << 16) | (pBuf[1] << 8) | (pBuf[2]); }
+
+    static unsigned int show_u16(unsigned char *pBuf) { return (pBuf[0] << 8) | (pBuf[1]); }
+
+    static unsigned int show_u8(unsigned char *pBuf) { return (pBuf[0]); }
+
+    static void write_u64(uint64_t &x, int length, int value) {
+        uint64_t mask = 0xFFFFFFFFFFFFFFFF >> (64 - length);
+        x = (x << length) | ((uint64_t) value & mask);
+    }
+
+    static unsigned int write_u32(unsigned int n) {
         unsigned int nn = 0;
-        unsigned char *p = (unsigned char *)&n;
-        unsigned char *pp = (unsigned char *)&nn;
+        unsigned char *p = (unsigned char *) &n;
+        unsigned char *pp = (unsigned char *) &nn;
         pp[0] = p[3];
         pp[1] = p[2];
         pp[2] = p[1];
@@ -159,27 +170,33 @@ private:
         return nn;
     }
 
-	friend class Tag;
-	
-private:
-
-	FlvHeader *CreateFlvHeader(unsigned char *pBuf);
-	int DestroyFlvHeader(FlvHeader *pHeader);
-	Tag *CreateTag(unsigned char *pBuf, int nLeftLen);
-	int DestroyTag(Tag *pTag);
-	int Stat();
-	int StatVideo(Tag *pTag);
-	int IsUserDataTag(Tag *pTag);
+    friend class Tag;
 
 private:
 
-	FlvHeader* _pFlvHeader;
-	vector<Tag *> _vpTag;
-	FlvStat _sStat;
-	CVideojj *_vjj;
+    FlvHeader *create_flvHeader(unsigned char *pBuf);
 
-	// H.264
-	int _nNalUnitLength;
+    int destroy_flvHeader(FlvHeader *pHeader);
+
+    Tag *create_tag(unsigned char *pBuf, int nLeftLen);
+
+    int destroy_tag(Tag *pTag);
+
+    int stat();
+
+    int stat_video(Tag *pTag);
+
+    int is_user_dataTag(Tag *pTag);
+
+private:
+
+    FlvHeader *m_pFlvHeader;
+    vector<Tag *> m_tag;
+    FlvStat m_stat;
+    CVideojj *m_jj;
+
+    // H.264
+    int m_nalUnitLength;
 
 };
 

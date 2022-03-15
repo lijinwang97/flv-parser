@@ -8,7 +8,7 @@
 
 using namespace std;
 
-void Process(fstream &fin, const char *filename);
+void process(fstream &fin, const char *filename);
 
 int main(int argc, char *argv[]) {
     cout << "this is FLV parser test program!\ninput: flv, output:flv\n";
@@ -23,17 +23,17 @@ int main(int argc, char *argv[]) {
     if (!fin)
         return 0;
 
-    Process(fin, argv[2]); //argv[2]，输出flv文件
+    process(fin, argv[2]); //argv[2]，输出flv文件
 
     fin.close();
 
     return 1;
 }
 
-void Process(fstream &fin, const char *filename) {
+void process(fstream &fin, const char *filename) {
     CFlvParser parser;
 
-    int nBufSize = 2000 * 1024;
+    int nBufSize = 2 * 1024 * 1024;
     int nFlvPos = 0;
     unsigned char *pBuf, *pBak;
     pBuf = new unsigned char[nBufSize];
@@ -48,20 +48,20 @@ void Process(fstream &fin, const char *filename) {
             break;
         nFlvPos += nReadNum;
 
-        parser.Parse(pBuf, nFlvPos, nUsedLen);
+        parser.parse(pBuf, nFlvPos, nUsedLen);
         if (nFlvPos != nUsedLen) {
-            memcpy(pBak, pBuf + nUsedLen, nFlvPos - nUsedLen);
-            memcpy(pBuf, pBak, nFlvPos - nUsedLen);
+            memcpy(pBak, pBuf + nUsedLen, nFlvPos - nUsedLen); //将未使用的size复制到pBak
+            memcpy(pBuf, pBak, nFlvPos - nUsedLen); //从pBak复制回pBuf
         }
         nFlvPos -= nUsedLen;
     }
-    parser.PrintInfo();
-    parser.DumpH264("parser.264");
-    parser.DumpAAC("parser.aac");
+    parser.print_info(); //打印解析信息
+    parser.dump_H264("parser.264"); //dump h264文件
+    parser.dump_AAC("parser.aac"); //dump aac文件
 
     //dump into flv
-    parser.DumpFlv(filename);
+    parser.dump_Flv(filename); //输出flv格式文件
 
-    delete[]pBak;
+    delete[]pBak; //释放内存，使用delete[]
     delete[]pBuf;
 }
