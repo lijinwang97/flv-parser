@@ -528,7 +528,6 @@ int CFlvParser::CVideoTag::parse_nalu(CFlvParser *pParser, unsigned char *pTagDa
         }
         memcpy(m_media + m_mediaLen, &g_h264StartCode, 4);
         memcpy(m_media + m_mediaLen + 4, pd + nOffset + pParser->m_nalUnitLength, nNaluLen);
-        pParser->m_jj->Process(m_media + m_mediaLen, 4 + nNaluLen, m_header.m_TotalTS);
         m_mediaLen += (4 + nNaluLen); //m_mediaLen = startcode + nNaluLen（实际数据长度）
         nOffset += (pParser->m_nalUnitLength + nNaluLen); //一个nalu整体长度 = NalUnitLength + NaluLen
     }

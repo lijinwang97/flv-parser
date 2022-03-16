@@ -5,5 +5,4 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(cppDemo main.cpp FlvParser.cpp
         FlvParser.h
-        Videojj.cpp
-        Videojj.h)
+        )
