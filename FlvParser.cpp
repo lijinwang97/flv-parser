@@ -19,7 +19,6 @@ static const unsigned int g_h264StartCode = 0x01000000;
 
 CFlvParser::CFlvParser() {
     m_pFlvHeader = NULL;
-    m_jj = new CVideojj();
 }
 
 CFlvParser::~CFlvParser() {
@@ -27,8 +26,6 @@ CFlvParser::~CFlvParser() {
         destroy_tag(m_tag[i]);
         delete m_tag[i];
     }
-    if (m_jj != NULL)
-        delete m_jj;
 }
 
 int CFlvParser::parse(unsigned char *pBuf, int nBufSize, int &nUsedLen) {
@@ -65,9 +62,6 @@ int CFlvParser::print_info() {
     cout << "vnum: " << m_stat.m_videoNum << " , anum: " << m_stat.m_audioNum << " , mnum: " << m_stat.m_metaNum
          << endl;
     cout << "maxTimeStamp: " << m_stat.m_maxTimeStamp << " ,m_lengthSize: " << m_stat.m_lengthSize << endl;
-    cout << "Vjj SEI num: " << m_jj->_vVjjSEI.size() << endl;
-    for (int i = 0; i < m_jj->_vVjjSEI.size(); i++)
-        cout << "SEI time : " << m_jj->_vVjjSEI[i].nTimeStamp << endl;
     return 1;
 }
 
@@ -112,18 +106,18 @@ int CFlvParser::dump_Flv(const std::string &path) {
     fstream f;
     f.open(path.c_str(), ios_base::out | ios_base::binary);
 
-    // write flv-header
+    // 写Flv header
     f.write((char *) m_pFlvHeader->m_flvHeader, m_pFlvHeader->m_headSize);
     unsigned int nLastTagSize = 0;
 
 
-    // write flv-tag
+    // 写 flv tag
     vector<Tag *>::iterator it_tag;
     for (it_tag = m_tag.begin(); it_tag < m_tag.end(); it_tag++) {
-        unsigned int nn = write_u32(nLastTagSize);
+        unsigned int nn = write_u32(nLastTagSize); //第一个previousTagSize
         f.write((char *) &nn, 4);
 
-        //check duplicate start code
+        //检查重复的start code
         if ((*it_tag)->m_header.m_type == 0x09 && *((*it_tag)->m_tagData + 1) == 0x01) {
             bool duplicate = false;
             unsigned char *pStartCode = (*it_tag)->m_tagData + 5 + m_nalUnitLength;

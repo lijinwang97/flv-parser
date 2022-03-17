@@ -3,8 +3,6 @@
 
 #include <vector>
 
-#include "Videojj.h"
-
 using namespace std;
 
 typedef unsigned long long uint64_t;
@@ -193,7 +191,6 @@ private:
     FlvHeader *m_pFlvHeader;
     vector<Tag *> m_tag;
     FlvStat m_stat;
-    CVideojj *m_jj;
 
     // H.264
     int m_nalUnitLength;
